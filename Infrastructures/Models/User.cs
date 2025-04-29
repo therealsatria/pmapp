@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Infrastructures.Models
@@ -24,14 +22,18 @@ namespace Infrastructures.Models
         public string Email { get; set; }
 
         [Required]
-        public string PasswordHash { get; set; }
-
+        public byte[] PasswordHash { get; set; } = Array.Empty<byte>();
+        
         [Required]
+        public byte[] PasswordSalt { get; set; } = Array.Empty<byte>();
+        
         public string FullName { get; set; }
 
         public string ProfilePictureUrl { get; set; }
 
         public DateTime? LastLogin { get; set; }
+
+        public string Role { get; set; } = "user";
 
         [Required]
         public bool IsActive { get; set; } = true;

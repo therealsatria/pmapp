@@ -5,6 +5,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<Infrastructures.Services.IProjectService, Infrastructures.Services.ProjectService>();
+builder.Services.AddScoped<Infrastructures.Repositories.IProjectRepository, Infrastructures.Repositories.ProjectRepository>();
+
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<Infrastructures.Data.AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
