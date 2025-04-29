@@ -12,7 +12,7 @@ public class ProjectMemberDto
 public class ProjectMemberShortDto
 {
     public Guid UserId { get; set; }
-    public string FullName { get; set; }
-    public string AvatarUrl { get; set; }
+    public Guid ProjectId { get; set; }
+    public DateTime JoinedAt { get; set; }
     public string Role { get; set; }
 }
