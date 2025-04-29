@@ -1,0 +1,18 @@
+namespace Infrastructures.Dtos;
+
+public class ProjectMemberDto
+{
+    public Guid ProjectMemberId { get; set; }
+    public UserShortDto User { get; set; }
+    public string Role { get; set; }
+    public DateTime JoinedAt { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class ProjectMemberShortDto
+{
+    public Guid UserId { get; set; }
+    public string FullName { get; set; }
+    public string AvatarUrl { get; set; }
+    public string Role { get; set; }
+}
