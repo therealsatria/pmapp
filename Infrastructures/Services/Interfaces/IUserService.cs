@@ -7,4 +7,5 @@ public interface IUserService
     Task<UserDto> LoginUserAsync(LoginDto loginDto);
     Task<UserDto> GetUserByIdAsync(Guid id);
     Task<IEnumerable<UserDto>> GetAllUsersAsync();
+    Task<bool> UpdateLastLoginAsync(Guid userId);
 }

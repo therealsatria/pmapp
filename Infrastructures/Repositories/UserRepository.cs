@@ -69,4 +69,15 @@ public class UserRepository : IUserRepository
         
         return user;
     }
+    
+    public async Task<bool> UpdateLastLoginAsync(Guid userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return false;
+        
+        user.LastLogin = DateTime.UtcNow;
+        _context.Users.Update(user);
+        
+        return await _context.SaveChangesAsync() > 0;
+    }
 }

@@ -17,21 +17,41 @@
                     </div>
                 }
                 
-                <form asp-controller="Auth" asp-action="Login" method="post">
+                <form asp-controller="Auth" asp-action="Login" method="post" id="loginForm">
                     <div class="mb-3">
                         <label asp-for="Username" class="form-label"></label>
-                        <input asp-for="Username" class="form-control">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input asp-for="Username" class="form-control" autocomplete="username" autofocus>
+                        </div>
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
                     
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" autocomplete="current-password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input">
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </button>
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="#" class="text-decoration-none">Forgot password?</a>
                     </div>
                 </form>
             </div>
@@ -44,4 +64,28 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Toggle password visibility
+            $('#togglePassword').click(function() {
+                const passwordInput = $('#Password');
+                const icon = $(this).find('i');
+                
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+            
+            // Add form validation
+            $('#loginForm').submit(function(e) {
+                if (!$(this).valid()) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 } 

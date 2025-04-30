@@ -76,4 +76,9 @@ public class UserService : IUserService
             Token = _tokenService.CreateToken(user)
         });
     }    
+    
+    public async Task<bool> UpdateLastLoginAsync(Guid userId)
+    {
+        return await _userRepository.UpdateLastLoginAsync(userId);
+    }
 }

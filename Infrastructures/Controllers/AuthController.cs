@@ -84,8 +84,10 @@ public class AuthController : Controller
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties
         {
-            IsPersistent = true,
-            ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+            IsPersistent = loginDto.RememberMe,
+            ExpiresUtc = loginDto.RememberMe ? 
+                DateTimeOffset.UtcNow.AddDays(30) : 
+                DateTimeOffset.UtcNow.AddHours(1)
         };
         
         await HttpContext.SignInAsync(
@@ -93,7 +95,15 @@ public class AuthController : Controller
             new ClaimsPrincipal(claimsIdentity),
             authProperties);
         
-        // Redirect to home page or dashboard after successful login
+        // Update last login timestamp
+        await _userService.UpdateLastLoginAsync(user.Id);
+        
+        // Redirect to previous page if available, otherwise go to home
+        if (TempData["ReturnUrl"] != null)
+        {
+            return Redirect(TempData["ReturnUrl"]?.ToString() ?? "/");
+        }
+        
         return RedirectToAction("Index", "Home");
     }
     
