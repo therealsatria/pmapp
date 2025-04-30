@@ -1,5 +1,3 @@
-using System;
-
 namespace Infrastructures.Dtos;
 
 /// <summary>
