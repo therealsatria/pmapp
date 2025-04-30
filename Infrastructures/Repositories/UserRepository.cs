@@ -30,7 +30,7 @@ public class UserRepository : IUserRepository
         return await _context.Users.SingleOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
     }
 
-    public async Task<User> RegisterUserAsync(string username, string email, string password)
+    public async Task<User> RegisterUserAsync(string username, string email, string password, string fullName)
     {
         using var hmac = new HMACSHA512();
         var passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
@@ -38,8 +38,10 @@ public class UserRepository : IUserRepository
         {
             Username = username,
             Email = email,
+            FullName = fullName,
             PasswordHash = passwordHash,
             PasswordSalt = hmac.Key,
+            ProfilePictureUrl = "", // Default empty string
             CreatedAt = DateTime.UtcNow,
             LastLogin = DateTime.UtcNow
         };

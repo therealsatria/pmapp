@@ -6,7 +6,7 @@ public class TaskCommentDto
 {
     public Guid Id { get; set; }
     public string CommentText { get; set; }
-    public UserShortDto Author { get; set; }
+    // public UserShortDto Author { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

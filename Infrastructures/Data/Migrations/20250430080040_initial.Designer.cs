@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace pmapp.Infrastructures.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250429042516_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20250430080040_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -318,11 +318,19 @@ namespace pmapp.Infrastructures.Data.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ProfilePictureUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ProfilePictureUrl")
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 

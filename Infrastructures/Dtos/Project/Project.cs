@@ -15,7 +15,7 @@ public class ProjectDetailDto : ProjectListDto
 {
     public string Description { get; set; }
     public string Priority { get; set; }
-    public UserShortDto CreatedBy { get; set; }
+    // public UserShortDto CreatedBy { get; set; }
     // public IEnumerable<ProjectPhaseDto> Phases { get; set; }
     // public IEnumerable<ProjectUpdateDto> RecentUpdates { get; set; }
 }

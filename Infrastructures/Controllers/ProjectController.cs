@@ -1,4 +1,5 @@
 using Infrastructures.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace pmapp.Infrastructures.Controllers
@@ -12,10 +13,11 @@ namespace pmapp.Infrastructures.Controllers
             _projectService = projectService;
         }
 
+        [Authorize(Roles = "user")]
         public async Task<IActionResult> Index()
         {
-            var projects = await _projectService.GetAllProjectsAsync();
-            return View(projects);
+            var project = await _projectService.GetAllProjectsAsync();
+            return View(project);
         }
 
         public async Task<IActionResult> Details(Guid id)

@@ -5,7 +5,7 @@ using Infrastructures.Models;
 using Infrastructures.Services;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Infrastructure.Services;
+namespace Infrastructures.Services;
 
 public class TokenService : ITokenService
 {

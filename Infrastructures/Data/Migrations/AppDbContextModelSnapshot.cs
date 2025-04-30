@@ -315,11 +315,19 @@ namespace pmapp.Infrastructures.Data.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ProfilePictureUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ProfilePictureUrl")
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 

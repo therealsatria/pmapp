@@ -32,7 +32,8 @@ public class UserService : IUserService
         var user = await _userRepository.RegisterUserAsync(
             registerDto.Username, 
             registerDto.Email, 
-            registerDto.Password
+            registerDto.Password,
+            registerDto.FullName
         );
 
         return new UserDto
@@ -40,6 +41,7 @@ public class UserService : IUserService
             Id = user.Id,
             Username = user.Username,
             Email = user.Email,
+            FullName = user.FullName,
             Role = user.Role,
             Token = _tokenService.CreateToken(user)
         };
@@ -55,6 +57,7 @@ public class UserService : IUserService
             Id = user.Id,
             Username = user.Username,
             Email = user.Email,
+            FullName = user.FullName,
             Role = user.Role,
             Token = _tokenService.CreateToken(user)
         };
@@ -68,6 +71,7 @@ public class UserService : IUserService
             Id = user.Id,
             Username = user.Username,
             Email = user.Email,
+            FullName = user.FullName,
             Role = user.Role,
             Token = _tokenService.CreateToken(user)
         });

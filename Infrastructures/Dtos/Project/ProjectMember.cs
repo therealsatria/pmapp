@@ -3,7 +3,7 @@ namespace Infrastructures.Dtos;
 public class ProjectMemberDto
 {
     public Guid ProjectMemberId { get; set; }
-    public UserShortDto User { get; set; }
+    //public UserShortDto User { get; set; }
     public string Role { get; set; }
     public DateTime JoinedAt { get; set; }
     public bool IsActive { get; set; }
