@@ -23,8 +23,7 @@ public class UserService : IUserService
             Id = user.Id,
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role,
-            Token = _tokenService.CreateToken(user)
+            Role = user.Role
         };
     }
     public async Task<UserDto> RegisterUserAsync(RegisterDto registerDto)
@@ -43,7 +42,7 @@ public class UserService : IUserService
             Email = user.Email,
             FullName = user.FullName,
             Role = user.Role,
-            Token = _tokenService.CreateToken(user)
+            CreatedAt = DateTime.Now
         };
     }
 
@@ -52,6 +51,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetUserByIdAsync(id);
         if (user == null) return null;
         
+        var now = DateTime.Now;
         return new UserDto  
         {
             Id = user.Id,
@@ -59,13 +59,16 @@ public class UserService : IUserService
             Email = user.Email,
             FullName = user.FullName,
             Role = user.Role,
-            Token = _tokenService.CreateToken(user)
+            CreatedAt = user.CreatedAt,
+            LastLogin = user.LastLogin ?? now,
+            LastLoginFormatted = GetRelativeTimeString(user.LastLogin ?? now, now)
         };
     }
 
     public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
     {
         var users = await _userRepository.GetAllUsersAsync();
+        var now = DateTime.UtcNow;
         return users.Select(user => new UserDto
         {
             Id = user.Id,
@@ -73,10 +76,42 @@ public class UserService : IUserService
             Email = user.Email,
             FullName = user.FullName,
             Role = user.Role,
-            Token = _tokenService.CreateToken(user)
+            CreatedAt = user.CreatedAt,
+            LastLogin = user.LastLogin ?? now,
+            LastLoginFormatted = GetRelativeTimeString(user.LastLogin ?? now, now)
         });
     }    
     
+    private string GetRelativeTimeString(DateTime pastTime, DateTime currentTime)
+    {
+        var timeSpan = currentTime - pastTime;
+        
+        if (timeSpan.TotalSeconds < 60)
+        {
+            return $"{(int)timeSpan.TotalSeconds} detik yang lalu";
+        }
+        if (timeSpan.TotalMinutes < 60)
+        {
+            return $"{(int)timeSpan.TotalMinutes} menit yang lalu";
+        }
+        if (timeSpan.TotalHours < 24)
+        {
+            return $"{(int)timeSpan.TotalHours} jam yang lalu";
+        }
+        if (timeSpan.TotalDays < 30)
+        {
+            return $"{(int)timeSpan.TotalDays} hari yang lalu";
+        }
+        if (timeSpan.TotalDays < 365)
+        {
+            int months = (int)(timeSpan.TotalDays / 30);
+            return $"{months} bulan yang lalu";
+        }
+        
+        int years = (int)(timeSpan.TotalDays / 365);
+        return $"{years} tahun yang lalu";
+    }
+
     public async Task<bool> UpdateLastLoginAsync(Guid userId)
     {
         return await _userRepository.UpdateLastLoginAsync(userId);
