@@ -437,21 +437,6 @@ public class ProjectService : IProjectService
 
     //============================not implemented=========================================================
 
-    Task<bool> IProjectService.AssignTaskAsync(Guid taskId, Guid userId)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<ProjectTaskDto> IProjectService.CreateTaskAsync(CreateProjectTaskDto taskDto)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.DeleteTaskAsync(Guid taskId)
-    {
-        throw new NotImplementedException();
-    }
-
     Task<bool> IProjectService.ExtendProjectDeadlineAsync(Guid projectId, DateTime newDeadline)
     {
         throw new NotImplementedException();
@@ -492,16 +477,6 @@ public class ProjectService : IProjectService
         throw new NotImplementedException();
     }
 
-    Task<IEnumerable<ProjectTaskDto>> IProjectService.GetProjectTasksAsync(Guid projectId)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<ProjectTaskDetailDto> IProjectService.GetTaskByIdAsync(Guid taskId)
-    {
-        throw new NotImplementedException();
-    }
-
     Task<Dictionary<string, int>> IProjectService.GetTaskStatusDistributionAsync(Guid projectId)
     {
         throw new NotImplementedException();
@@ -520,26 +495,6 @@ public class ProjectService : IProjectService
     
 
     Task<bool> IProjectService.UpdateProjectStatusAsync(Guid projectId, string newStatus)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<ProjectTaskDto> IProjectService.UpdateTaskAsync(UpdateProjectTaskDto taskDto)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.UpdateTaskStatusAsync(Guid taskId, string newStatus)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.CompleteTaskAsync(Guid taskId)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.ReopenTaskAsync(Guid taskId)
     {
         throw new NotImplementedException();
     }

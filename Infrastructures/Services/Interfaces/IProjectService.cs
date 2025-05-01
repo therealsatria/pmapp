@@ -1,8 +1,4 @@
 using Infrastructures.Dtos;
-using Infrastructures.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Services;
 
@@ -38,17 +34,6 @@ public interface IProjectService
     // Project status management
     Task<bool> UpdateProjectStatusAsync(Guid projectId, string newStatus);
     Task<bool> ExtendProjectDeadlineAsync(Guid projectId, DateTime newDeadline);
-    
-    // Task management within projects
-    Task<IEnumerable<ProjectTaskDto>> GetProjectTasksAsync(Guid projectId);
-    Task<ProjectTaskDetailDto> GetTaskByIdAsync(Guid taskId);
-    Task<ProjectTaskDto> CreateTaskAsync(CreateProjectTaskDto request);
-    Task<ProjectTaskDto> UpdateTaskAsync(UpdateProjectTaskDto request);
-    Task<bool> CompleteTaskAsync(Guid taskId);
-    Task<bool> ReopenTaskAsync(Guid taskId);
-    Task<bool> DeleteTaskAsync(Guid taskId);
-    Task<bool> AssignTaskAsync(Guid taskId, Guid userId);
-    Task<bool> UpdateTaskStatusAsync(Guid taskId, string requestStatus);
     
     // Project activity tracking
     Task<IEnumerable<ProjectActivityDto>> GetProjectActivitiesAsync(Guid projectId, int count = 10);
