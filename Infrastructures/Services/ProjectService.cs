@@ -1,4 +1,5 @@
 using Infrastructures.Dtos;
+using Infrastructures.Models;
 using Infrastructures.Repositories;
 
 namespace Infrastructures.Services;
@@ -58,17 +59,49 @@ public class ProjectService : IProjectService
         };
     }
 
+    public async Task<ProjectListDto> CreateProjectAsync(CreateProjectDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        var project = new Project
+        {
+            Id = Guid.NewGuid(),
+            ProjectName = request.ProjectName,
+            Description = request.Description,
+            StartDate = DateTime.UtcNow,
+            EndDate = request.EndDate,
+            Status = "initial-status",
+            CreatedAt = DateTime.UtcNow
+        };
+        var createdProject = await _projectRepository.CreateAsync(project);
+        if (createdProject == null)
+        {
+            throw new InvalidOperationException("Failed to create project.");
+        }
+        return new ProjectListDto
+        {
+            Id = createdProject.Id,
+            ProjectName = createdProject.ProjectName,
+            Description = createdProject.Description,
+            Status = createdProject.Status,
+            StartDate = createdProject.StartDate ?? DateTime.MinValue,
+            EndDate = createdProject.EndDate,
+            TeamMembers = createdProject.ProjectMembers.Select(m => new ProjectMemberShortDto
+            {
+                UserId = m.UserId,
+                Role = m.Role,
+                JoinedAt = m.JoinedAt,
+                ProjectId = m.ProjectId
+            })
+        };
+    }
+
     Task<ProjectMemberDto> IProjectService.AddMemberToProjectAsync(AddProjectMemberDto memberDto)
     {
         throw new NotImplementedException();
     }
 
     Task<bool> IProjectService.AssignTaskAsync(Guid taskId, Guid userId)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<ProjectListDto> IProjectService.CreateProjectAsync(CreateProjectDto projectDto)
     {
         throw new NotImplementedException();
     }
@@ -184,6 +217,16 @@ public class ProjectService : IProjectService
     }
 
     Task<bool> IProjectService.UpdateTaskStatusAsync(Guid taskId, string newStatus)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<bool> IProjectService.CompleteTaskAsync(Guid taskId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<bool> IProjectService.ReopenTaskAsync(Guid taskId)
     {
         throw new NotImplementedException();
     }
