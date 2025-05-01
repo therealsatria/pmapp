@@ -106,7 +106,7 @@ The application provides a user-friendly web interface with:
 ## Setup Instructions
 
 ### Prerequisites
-- .NET 6.0 or later
+- .NET 8.0
 - PostgreSQL database
 
 ### Database Setup
