@@ -20,7 +20,8 @@ public class UpdateProjectDto
 
     public DateTime? EndDate { get; set; }
 
-    public string Priority { get; set; }
-
     public string Status { get; set; } // "Planning", "Active", "OnHold", "Completed", "Cancelled"
+    
+    [Required]
+    public Guid CreatedById { get; set; }
 }

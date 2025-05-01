@@ -1,16 +1,19 @@
 using Infrastructures.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Infrastructures.Dtos;
 
 namespace pmapp.Infrastructures.Controllers
 {
     public class ProjectController : Controller
     {
         private readonly IProjectService _projectService;
+        private readonly IUserService _userService;
 
-        public ProjectController(IProjectService projectService)
+        public ProjectController(IProjectService projectService, IUserService userService)
         {
             _projectService = projectService;
+            _userService = userService;
         }
 
         [Authorize(Roles = "user")]
@@ -28,6 +31,145 @@ namespace pmapp.Infrastructures.Controllers
                 return NotFound();
             }
             return View(project);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> Create()
+        {
+            // Dapatkan daftar semua pengguna untuk dropdown
+            var users = await _userService.GetAllUsersAsync();
+            ViewBag.Users = users;
+            
+            var model = new CreateProjectDto
+            {
+                StartDate = DateTime.UtcNow, // Default to current UTC time
+                CreatedById = User.FindFirst("sub")?.Value != null 
+                              ? Guid.Parse(User.FindFirst("sub").Value) 
+                              : Guid.Empty
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateProjectDto projectDto)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Ensure all dates are in UTC format to avoid PostgreSQL errors
+                    projectDto.StartDate = projectDto.StartDate.ToUniversalTime();
+                    if (projectDto.EndDate.HasValue)
+                    {
+                        projectDto.EndDate = projectDto.EndDate.Value.ToUniversalTime();
+                    }
+                    
+                    // Pastikan CreatedById tidak kosong
+                    if (projectDto.CreatedById == Guid.Empty)
+                    {
+                        ModelState.AddModelError("CreatedById", "Please select a user");
+                        var users = await _userService.GetAllUsersAsync();
+                        ViewBag.Users = users;
+                        return View(projectDto);
+                    }
+
+                    var result = await _projectService.CreateProjectAsync(projectDto);
+                    return RedirectToAction(nameof(Details), new { id = result.Id });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                }
+            }
+            
+            // Jika validation error, kita perlu mengambil ulang daftar user
+            var userList = await _userService.GetAllUsersAsync();
+            ViewBag.Users = userList;
+            return View(projectDto);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            // Dapatkan daftar semua pengguna untuk dropdown
+            var users = await _userService.GetAllUsersAsync();
+            ViewBag.Users = users;
+
+            var updateProjectDto = new UpdateProjectDto
+            {
+                Id = project.Id,
+                ProjectName = project.ProjectName,
+                Description = project.Description,
+                StartDate = project.StartDate,
+                EndDate = project.EndDate,
+                Status = project.Status,
+                CreatedById = project.CreatedBy?.Id ?? Guid.Empty
+            };
+
+            return View(updateProjectDto);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, UpdateProjectDto projectDto)
+        {
+            if (id != projectDto.Id)
+            {
+                return BadRequest();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Ensure all dates are in UTC format
+                    if (projectDto.StartDate.HasValue)
+                    {
+                        projectDto.StartDate = projectDto.StartDate.Value.ToUniversalTime();
+                    }
+                    
+                    if (projectDto.EndDate.HasValue)
+                    {
+                        projectDto.EndDate = projectDto.EndDate.Value.ToUniversalTime();
+                    }
+                    
+                    // Pastikan CreatedById tidak kosong
+                    if (projectDto.CreatedById == Guid.Empty)
+                    {
+                        ModelState.AddModelError("CreatedById", "Please select a user");
+                        var users = await _userService.GetAllUsersAsync();
+                        ViewBag.Users = users;
+                        return View(projectDto);
+                    }
+                    
+                    var result = await _projectService.UpdateProjectAsync(id, projectDto);
+                    return RedirectToAction(nameof(Details), new { id = result.Id });
+                }
+                catch (KeyNotFoundException)
+                {
+                    return NotFound();
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                }
+            }
+            
+            // Jika validation error, kita perlu mengambil ulang daftar user
+            var userList = await _userService.GetAllUsersAsync();
+            ViewBag.Users = userList;
+            return View(projectDto);
         }
     }
 }

@@ -72,9 +72,8 @@ public class ProjectRepository : IProjectRepository
         existingProject.Status = project.Status;
         existingProject.StartDate = project.StartDate;
         existingProject.EndDate = project.EndDate;
+        existingProject.CreatedById = project.CreatedById;
         existingProject.UpdatedAt = DateTime.UtcNow;
-        
-        // Don't update CreatedAt, CreatedById and other immutable properties
         
         _context.Projects.Update(existingProject);
         await _context.SaveChangesAsync();

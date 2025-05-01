@@ -1,0 +1,433 @@
+@model Infrastructures.Dtos.ProjectDetailDto
+
+@{
+    ViewData["Title"] = "Project Details";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>@Model.ProjectName</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Projects</a></li>
+                    <li class="breadcrumb-item active">@Model.ProjectName</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <!-- Project Overview Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                    <h5 class="mb-0">Project Overview</h5>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Description</h6>
+                                <p>@Model.Description</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Status</h6>
+                                @switch (Model.Status)
+                                {
+                                    case "Planning":
+                                        <span class="badge bg-info">Planning</span>
+                                        break;
+                                    case "Active":
+                                        <span class="badge bg-primary">Active</span>
+                                        break;
+                                    case "OnHold":
+                                        <span class="badge bg-warning">On Hold</span>
+                                        break;
+                                    case "Completed":
+                                        <span class="badge bg-success">Completed</span>
+                                        break;
+                                    case "Cancelled":
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@Model.Status</span>
+                                        break;
+                                }
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Priority</h6>
+                                @switch (Model.Priority)
+                                {
+                                    case "High":
+                                        <span class="badge bg-danger">High</span>
+                                        break;
+                                    case "Medium":
+                                        <span class="badge bg-warning">Medium</span>
+                                        break;
+                                    case "Low":
+                                        <span class="badge bg-success">Low</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@Model.Priority</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Start Date</h6>
+                                <p>@Model.StartDate.ToShortDateString()</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Created By</h6>
+                                <p>@(Model.CreatedBy?.Username ?? "Unknown")</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">End Date</h6>
+                                <p>@(Model.EndDate.HasValue ? Model.EndDate.Value.ToShortDateString() : "Not set")</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Days Remaining</h6>
+                                @if (Model.EndDate.HasValue)
+                                {
+                                    if (Model.DaysRemaining > 0)
+                                    {
+                                        <p>@Model.DaysRemaining days</p>
+                                    }
+                                    else if (Model.IsOverdue)
+                                    {
+                                        <p class="text-danger">Overdue by @Math.Abs(Model.DaysRemaining) days</p>
+                                    }
+                                    else
+                                    {
+                                        <p>Due today</p>
+                                    }
+                                }
+                                else
+                                {
+                                    <p>No deadline set</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Progress</h6>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar @(Model.Progress == 100 ? "bg-success" : "")" role="progressbar"
+                                style="width: @Model.Progress%;" aria-valuenow="@Model.Progress" aria-valuemin="0" aria-valuemax="100">
+                                @Model.Progress%
+                            </div>
+                        </div>
+                        <div class="mt-2 small text-muted">
+                            @Model.CompletedTasks completed of @Model.TotalTasks total tasks
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Members -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                    <h5 class="mb-0">Team Members</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-person-plus"></i> Add Member
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.TeamMembers?.Any() != true)
+                    {
+                        <div class="alert alert-info">
+                            No team members assigned to this project yet.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach (var member in Model.TeamMembers)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar bg-primary rounded-circle text-white">
+                                                <span>@(member.UserId.ToString().Substring(0, 2).ToUpper())</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="fw-bold mb-0">User ID: @member.UserId</h6>
+                                            <p class="text-muted mb-0">@member.Role</p>
+                                            <small class="text-muted">Joined: @member.JoinedAt.ToShortDateString()</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Project Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Project Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Edit Project
+                        </a>
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-people"></i> Manage Team
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-list-check"></i> View All Tasks
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Add New Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Task Summary</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TasksByStatus?.Any() != true)
+                    {
+                        <div class="alert alert-info">
+                            No tasks created for this project yet.
+                        </div>
+                    }
+                    else
+                    {
+                        <h6 class="fw-bold mb-3">Task Status</h6>
+                        <div class="mb-4">
+                            @foreach (var status in Model.TasksByStatus)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>@status.Key</span>
+                                    <span class="badge bg-primary rounded-pill">@status.Value</span>
+                                </div>
+                            }
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Task Priority</h6>
+                        <div>
+                            @foreach (var priority in Model.TasksByPriority)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>@priority.Key</span>
+                                    <span class="badge bg-primary rounded-pill">@priority.Value</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Recent Activities</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentActivities?.Any() != true)
+                    {
+                        <div class="alert alert-info">
+                            No recent activities recorded.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="timeline">
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <div class="timeline-item mb-3">
+                                    <div class="timeline-item-marker"></div>
+                                    <div class="timeline-item-content">
+                                        <p class="mb-0">@activity.Description</p>
+                                        <small class="text-muted">@activity.Timestamp.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    @if (Model.RecentTasks?.Any() == true)
+    {
+        <div class="row">
+            <div class="col">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                        <h5 class="mb-0">Recent Tasks</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus"></i> Add Task
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Due Date</th>
+                                        <th>Assigned To</th>
+                                        <th>Progress</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var task in Model.RecentTasks)
+                                    {
+                                        <tr>
+                                            <td>@task.Title</td>
+                                            <td>
+                                                @switch (task.Status)
+                                                {
+                                                    case "Todo":
+                                                        <span class="badge bg-secondary">To Do</span>
+                                                        break;
+                                                    case "InProgress":
+                                                        <span class="badge bg-primary">In Progress</span>
+                                                        break;
+                                                    case "Blocked":
+                                                        <span class="badge bg-warning">Blocked</span>
+                                                        break;
+                                                    case "Completed":
+                                                        <span class="badge bg-success">Completed</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@task.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (task.Priority)
+                                                {
+                                                    case "High":
+                                                        <span class="badge bg-danger">High</span>
+                                                        break;
+                                                    case "Medium":
+                                                        <span class="badge bg-warning">Medium</span>
+                                                        break;
+                                                    case "Low":
+                                                        <span class="badge bg-success">Low</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@task.Priority</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @(task.DueDate.HasValue ? task.DueDate.Value.ToShortDateString() : "-")
+                                                @if (task.IsOverdue)
+                                                {
+                                                    <span class="text-danger ms-1"><i class="bi bi-exclamation-circle-fill"></i></span>
+                                                }
+                                            </td>
+                                            <td>@(task.AssignedTo?.Username ?? "Unassigned")</td>
+                                            <td>
+                                                <div class="progress" style="height: 5px;">
+                                                    <div class="progress-bar @(task.Progress == 100 ? "bg-success" : "")" role="progressbar"
+                                                        style="width: @task.Progress%;" aria-valuenow="@task.Progress" aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small>@task.Progress%</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-outline-info">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .avatar {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item-marker {
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+        }
+
+        .timeline-item-marker::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 12px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #dee2e6;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item:last-child .timeline-item-marker::before {
+            display: none;
+        }
+    </style>
+}

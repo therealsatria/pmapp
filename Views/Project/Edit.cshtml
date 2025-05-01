@@ -1,0 +1,141 @@
+@model Infrastructures.Dtos.UpdateProjectDto
+
+@{
+    ViewData["Title"] = "Edit Project";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Edit Project</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Projects</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label asp-for="ProjectName" class="form-label fw-bold">Project Name <span class="text-danger">*</span></label>
+                            <input asp-for="ProjectName" class="form-control" placeholder="Enter project name" />
+                            <span asp-validation-for="ProjectName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe your project"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label fw-bold">Start Date</label>
+                                <input asp-for="StartDate" class="form-control" type="date" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                                <small class="form-text text-muted">All dates are stored in UTC format</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label fw-bold">End Date</label>
+                                <input asp-for="EndDate" class="form-control" type="date" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" />
+                                <span asp-validation-for="EndDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label fw-bold">Status</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Planning">Planning</option>
+                                <option value="Active">Active</option>
+                                <option value="OnHold">On Hold</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CreatedById" class="form-label fw-bold">Project Owner <span class="text-danger">*</span></label>
+                            <select asp-for="CreatedById" class="form-select">
+                                <option value="">-- Select Project Owner --</option>
+                                @foreach (var user in ViewBag.Users)
+                                {
+                                    <option value="@user.Id">@user.FullName (@user.Username)</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CreatedById" class="text-danger"></span>
+                            <small class="form-text text-muted">This user will be the primary owner of the project</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                <a asp-action="Index" class="btn btn-outline-secondary me-2">Back to List</a>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">View Details</a>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Project Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">Manage Team Members</a>
+                        <a href="#" class="btn btn-outline-primary">Manage Tasks</a>
+                        <a href="#" class="btn btn-outline-danger">Delete Project</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Project Status Guide</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-info rounded-pill me-2">Planning</span>
+                            <small>Initial stage, gathering requirements</small>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-primary rounded-pill me-2">Active</span>
+                            <small>Project is currently in progress</small>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-warning rounded-pill me-2">OnHold</span>
+                            <small>Project temporarily paused</small>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-success rounded-pill me-2">Completed</span>
+                            <small>All tasks finished successfully</small>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-danger rounded-pill me-2">Cancelled</span>
+                            <small>Project terminated before completion</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} 
