@@ -187,6 +187,23 @@ public class ProjectService : IProjectService
         };
     }
 
+    public async Task<bool> DeleteProjectAsync(Guid projectId)
+    {
+        if (projectId == Guid.Empty)
+        {
+            throw new ArgumentException("Project ID cannot be empty", nameof(projectId));
+        }
+
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new KeyNotFoundException($"Project with ID {projectId} not found.");
+        }
+
+        await _projectRepository.DeleteAsync(projectId);
+        return true;
+    }
+
     Task<ProjectMemberDto> IProjectService.AddMemberToProjectAsync(AddProjectMemberDto memberDto)
     {
         throw new NotImplementedException();
@@ -198,11 +215,6 @@ public class ProjectService : IProjectService
     }
 
     Task<ProjectTaskDto> IProjectService.CreateTaskAsync(CreateProjectTaskDto taskDto)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.DeleteProjectAsync(Guid projectId)
     {
         throw new NotImplementedException();
     }

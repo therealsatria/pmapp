@@ -171,5 +171,40 @@ namespace pmapp.Infrastructures.Controllers
             ViewBag.Users = userList;
             return View(projectDto);
         }
+    
+        [HttpGet]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            return View(project);
+        }
+        
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            try
+            {
+                await _projectService.DeleteProjectAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                var project = await _projectService.GetProjectByIdAsync(id);
+                return View(project);
+            }
+        }
     }
 }
