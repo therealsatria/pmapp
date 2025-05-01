@@ -11,13 +11,6 @@ public interface IProjectRepository
     Task DeleteAsync(Guid projectId);
     Task<IEnumerable<Project>> GetProjectsByUserIdAsync(Guid userId, string status = null);
 
-    // Member
-    Task<ProjectMember> GetMembersAsync(Guid projectId, Guid userId);
-    Task<IEnumerable<ProjectMember>> GetMembersByProjectAsync(Guid projectId);
-    Task AddMemberAsync(ProjectMember member);
-    Task UpdateMemberRoleAsync(Guid memberId, string newRole);
-    Task RemoveMemberAsync(Guid memberId);
-
     // Additional methods
     Task<bool> IsUserInProject(Guid userId, Guid projectId);
     Task<int> GetProjectProgressAsync(Guid projectId);

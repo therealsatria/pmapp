@@ -120,44 +120,6 @@ public class ProjectRepository : IProjectRepository
         }
         return projects;
     }
-
-    public async Task<IEnumerable<ProjectMember>> GetMembersByProjectAsync(Guid projectId)
-    {
-        var members = await _context.ProjectMembers.AsNoTracking().Where(m => m.ProjectId == projectId).ToListAsync();
-        return members ?? new List<ProjectMember>();
-    }   
-    public async Task<ProjectMember> GetMembersAsync(Guid projectId, Guid userId)
-    {
-        var member = await _context.ProjectMembers.AsNoTracking().FirstOrDefaultAsync(m => m.ProjectId == projectId && m.UserId == userId);
-        return member ?? new ProjectMember();
-    }
-    public async Task AddMemberAsync(ProjectMember member)
-    {
-        await _context.ProjectMembers.AddAsync(member);
-        await _context.SaveChangesAsync();
-    }
-    public async Task UpdateMemberRoleAsync(Guid memberId, string newRole)
-    {
-        var member = await _context.ProjectMembers.FindAsync(memberId);
-        if (member == null)
-        {
-            throw new KeyNotFoundException($"Project member with ID {memberId} not found.");
-        }
-        member.Role = newRole;
-        member.UpdatedAt = DateTime.UtcNow;
-        _context.ProjectMembers.Update(member);
-        await _context.SaveChangesAsync();
-    }
-    public async Task RemoveMemberAsync(Guid memberId)
-    {
-        var member = await _context.ProjectMembers.FindAsync(memberId);
-        if (member == null)
-        {
-            throw new KeyNotFoundException($"Project member with ID {memberId} not found.");
-        }
-        _context.ProjectMembers.Remove(member);
-        await _context.SaveChangesAsync();
-    }
     public async Task<bool> IsUserInProject(Guid userId, Guid projectId)
     {
         return await _context.ProjectMembers.AnyAsync(m => m.UserId == userId && m.ProjectId == projectId);
