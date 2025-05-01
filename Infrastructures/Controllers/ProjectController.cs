@@ -206,5 +206,81 @@ namespace pmapp.Infrastructures.Controllers
                 return View(project);
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> AddMember(Guid id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            // Get all users for dropdown
+            var users = await _userService.GetAllUsersAsync();
+            ViewBag.Users = users;
+            
+            var model = new AddProjectMemberDto
+            {
+                ProjectId = id
+            };
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMember(AddProjectMemberDto memberDto)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await _projectService.AddMemberToProjectAsync(memberDto);
+                    return RedirectToAction(nameof(Details), new { id = memberDto.ProjectId });
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                }
+            }
+            
+            // If we get here, there was an error, so repopulate the dropdown
+            var users = await _userService.GetAllUsersAsync();
+            ViewBag.Users = users;
+            
+            return View(memberDto);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveMember(Guid id, Guid memberId)
+        {
+            try
+            {
+                await _projectService.RemoveMemberFromProjectAsync(memberId);
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error removing member: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
     }
 }

@@ -1,6 +1,9 @@
 using Infrastructures.Dtos;
 using Infrastructures.Models;
 using Infrastructures.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Infrastructures.Data;
+using AutoMapper;
 
 namespace Infrastructures.Services;
 
@@ -8,11 +11,19 @@ public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly IUserRepository _userRepository;
+    private readonly AppDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository)
+    public ProjectService(
+        IProjectRepository projectRepository, 
+        IUserRepository userRepository,
+        AppDbContext dbContext,
+        IMapper mapper)
     {
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     public async Task<IEnumerable<ProjectListDto>> GetAllProjectsAsync()
@@ -28,7 +39,11 @@ public class ProjectService : IProjectService
             EndDate = p.EndDate,
             TeamMembers = p.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
+                Id = m.Id,
                 UserId = m.UserId,
+                Username = m.User?.Username,
+                FullName = m.User?.FullName,
+                ProfilePictureUrl = m.User?.ProfilePictureUrl,
                 Role = m.Role,
                 JoinedAt = m.JoinedAt,
                 ProjectId = m.ProjectId
@@ -84,7 +99,11 @@ public class ProjectService : IProjectService
             CreatedBy = createdBy,
             TeamMembers = project.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
+                Id = m.Id,
                 UserId = m.UserId,
+                Username = m.User?.Username,
+                FullName = m.User?.FullName,
+                ProfilePictureUrl = m.User?.ProfilePictureUrl,
                 Role = m.Role,
                 JoinedAt = m.JoinedAt,
                 ProjectId = m.ProjectId
@@ -135,7 +154,11 @@ public class ProjectService : IProjectService
             UpdatedAt = createdProject.UpdatedAt,
             TeamMembers = createdProject.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
+                Id = m.Id,
                 UserId = m.UserId,
+                Username = m.User?.Username,
+                FullName = m.User?.FullName,
+                ProfilePictureUrl = m.User?.ProfilePictureUrl,
                 Role = m.Role,
                 JoinedAt = m.JoinedAt,
                 ProjectId = m.ProjectId
@@ -179,7 +202,11 @@ public class ProjectService : IProjectService
             UpdatedAt = updatedProject.UpdatedAt,
             TeamMembers = updatedProject.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
+                Id = m.Id,
                 UserId = m.UserId,
+                Username = m.User?.Username,
+                FullName = m.User?.FullName,
+                ProfilePictureUrl = m.User?.ProfilePictureUrl,
                 Role = m.Role,
                 JoinedAt = m.JoinedAt,
                 ProjectId = m.ProjectId
@@ -204,9 +231,141 @@ public class ProjectService : IProjectService
         return true;
     }
 
-    Task<ProjectMemberDto> IProjectService.AddMemberToProjectAsync(AddProjectMemberDto memberDto)
+    public async Task<ProjectMemberDto> AddMemberToProjectAsync(AddProjectMemberDto memberDto)
     {
-        throw new NotImplementedException();
+        if (memberDto == null)
+        {
+            throw new ArgumentNullException(nameof(memberDto));
+        }
+
+        // Validate project exists using LINQ
+        var projectExists = await _dbContext.Projects
+            .AnyAsync(p => p.Id == memberDto.ProjectId && !p.IsDeleted);
+            
+        if (!projectExists)
+        {
+            throw new KeyNotFoundException($"Project with ID {memberDto.ProjectId} not found.");
+        }
+
+        // Validate user exists using LINQ
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == memberDto.UserId && !u.IsDeleted && u.IsActive);
+            
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with ID {memberDto.UserId} not found or is inactive.");
+        }
+
+        // Check if user is already a member of the project using LINQ
+        var isAlreadyMember = await _dbContext.ProjectMembers
+            .AnyAsync(pm => 
+                pm.ProjectId == memberDto.ProjectId && 
+                pm.UserId == memberDto.UserId && 
+                !pm.IsDeleted);
+                                      
+        if (isAlreadyMember)
+        {
+            throw new InvalidOperationException($"User {user.Username} is already a member of this project.");
+        }
+
+        // Create new ProjectMember entity
+        var newMember = new ProjectMember
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = memberDto.ProjectId,
+            UserId = memberDto.UserId,
+            Role = memberDto.Role,
+            JoinedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Add to database and save changes
+        await _dbContext.ProjectMembers.AddAsync(newMember);
+        await _dbContext.SaveChangesAsync();
+
+        // Fetch the newly created member with related user data using Include
+        var createdMember = await _dbContext.ProjectMembers
+            .Include(pm => pm.User)
+            .FirstOrDefaultAsync(pm => pm.Id == newMember.Id);
+            
+        if (createdMember == null)
+        {
+            throw new InvalidOperationException("Failed to retrieve the newly created project member.");
+        }
+        
+        // Count assigned and completed tasks for the user in this project
+        var assignedTasksCount = await _dbContext.ProjectTasks
+            .CountAsync(pt => 
+                pt.ProjectId == memberDto.ProjectId && 
+                pt.AssignedToId == memberDto.UserId && 
+                !pt.IsDeleted);
+                
+        var completedTasksCount = await _dbContext.ProjectTasks
+            .CountAsync(pt => 
+                pt.ProjectId == memberDto.ProjectId && 
+                pt.AssignedToId == memberDto.UserId && 
+                pt.Status == "Completed" && 
+                !pt.IsDeleted);
+
+        // Use AutoMapper to map the entity to DTO
+        var resultDto = _mapper.Map<ProjectMemberDto>(createdMember);
+        
+        // Set additional properties that aren't directly mapped
+        resultDto.AssignedTasksCount = assignedTasksCount;
+        resultDto.CompletedTasksCount = completedTasksCount;
+        resultDto.IsActive = true;
+        
+        return resultDto;
+    }
+
+    public async Task<bool> RemoveMemberFromProjectAsync(Guid memberId)
+    {
+        if (memberId == Guid.Empty)
+        {
+            throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
+        }
+
+        // Find the project member by ID
+        var projectMember = await _dbContext.ProjectMembers
+            .FirstOrDefaultAsync(pm => pm.Id == memberId && !pm.IsDeleted);
+
+        if (projectMember == null)
+        {
+            throw new KeyNotFoundException($"Project member with ID {memberId} not found.");
+        }
+
+        // Get project and user info for activity log
+        var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectMember.ProjectId);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == projectMember.UserId);
+
+        // Perform soft delete instead of hard delete to maintain referential integrity
+        projectMember.IsDeleted = true;
+        projectMember.UpdatedAt = DateTime.UtcNow;
+
+        // Update any task assignments (optional - mark tasks as unassigned)
+        var assignedTasks = await _dbContext.ProjectTasks
+            .Where(pt => pt.ProjectId == projectMember.ProjectId && 
+                       pt.AssignedToId == projectMember.UserId && 
+                       !pt.IsDeleted)
+            .ToListAsync();
+
+        if (assignedTasks.Any())
+        {
+            foreach (var task in assignedTasks)
+            {
+                task.AssignedToId = null;
+                task.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        // Save changes to the database
+        await _dbContext.SaveChangesAsync();
+
+        // Note: Activity logging would be implemented here when LogProjectActivityAsync is available
+        // Example: await LogProjectActivityAsync(projectMember.ProjectId, "MemberRemoved", 
+        //    $"User {user?.Username ?? "Unknown"} was removed from project {project?.ProjectName ?? "Unknown"}", projectMember.UserId);
+
+        return true;
     }
 
     Task<bool> IProjectService.AssignTaskAsync(Guid taskId, Guid userId)
@@ -285,11 +444,6 @@ public class ProjectService : IProjectService
     }
 
     Task IProjectService.LogProjectActivityAsync(Guid projectId, string activityType, string description, Guid userId)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IProjectService.RemoveMemberFromProjectAsync(Guid memberId)
     {
         throw new NotImplementedException();
     }

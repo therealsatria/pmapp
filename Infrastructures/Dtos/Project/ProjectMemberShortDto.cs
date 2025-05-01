@@ -5,6 +5,7 @@ namespace Infrastructures.Dtos;
 /// </summary>
 public class ProjectMemberShortDto
 {
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string Username { get; set; }
     public string FullName { get; set; }

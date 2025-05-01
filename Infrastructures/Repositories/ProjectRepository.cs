@@ -16,7 +16,12 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<IEnumerable<Project>> GetAllProjectsAsync()
     {
-        var projects = await _context.Projects.AsNoTracking().ToListAsync();
+        var projects = await _context.Projects
+            .AsNoTracking()
+            .Include(p => p.ProjectMembers)
+                .ThenInclude(pm => pm.User)
+            .Include(p => p.CreatedBy)
+            .ToListAsync();
         return projects ?? new List<Project>();
     }
 
@@ -31,6 +36,7 @@ public class ProjectRepository : IProjectRepository
             .AsNoTracking()
             .Include(p => p.CreatedBy)
             .Include(p => p.ProjectMembers)
+                .ThenInclude(pm => pm.User)
             .FirstOrDefaultAsync(p => p.Id == projectId);
 
         if (project == null)
