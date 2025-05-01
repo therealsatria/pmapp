@@ -231,6 +231,8 @@ public class ProjectService : IProjectService
         return true;
     }
 
+    //======================Project Member==========================================================
+
     public async Task<ProjectMemberDto> AddMemberToProjectAsync(AddProjectMemberDto memberDto)
     {
         if (memberDto == null)
@@ -368,6 +370,73 @@ public class ProjectService : IProjectService
         return true;
     }
 
+    public async Task<ProjectMemberDto> UpdateMemberRoleAsync(UpdateProjectMemberRoleDto updateDto)
+    {
+        if (updateDto == null)
+        {
+            throw new ArgumentNullException(nameof(updateDto));
+        }
+
+        if (updateDto.MemberId == Guid.Empty)
+        {
+            throw new ArgumentException("Member ID cannot be empty", nameof(updateDto.MemberId));
+        }
+
+        if (string.IsNullOrWhiteSpace(updateDto.NewRole))
+        {
+            throw new ArgumentException("New role cannot be empty", nameof(updateDto.NewRole));
+        }
+
+        // Find the project member by ID
+        var projectMember = await _dbContext.ProjectMembers
+            .Include(pm => pm.User)
+            .Include(pm => pm.Project)
+            .FirstOrDefaultAsync(pm => pm.Id == updateDto.MemberId && !pm.IsDeleted);
+
+        if (projectMember == null)
+        {
+            throw new KeyNotFoundException($"Project member with ID {updateDto.MemberId} not found.");
+        }
+
+        // Update the role
+        projectMember.Role = updateDto.NewRole;
+        projectMember.UpdatedAt = DateTime.UtcNow;
+
+        // Save changes to the database
+        await _dbContext.SaveChangesAsync();
+
+        // Count assigned and completed tasks for statistics
+        var assignedTasksCount = await _dbContext.ProjectTasks.CountAsync(
+            pt => pt.ProjectId == projectMember.ProjectId && 
+                 pt.AssignedToId == projectMember.UserId && 
+                 !pt.IsDeleted);
+                
+        var completedTasksCount = await _dbContext.ProjectTasks.CountAsync(
+            pt => pt.ProjectId == projectMember.ProjectId && 
+                 pt.AssignedToId == projectMember.UserId && 
+                 pt.Status == "Completed" && 
+                 !pt.IsDeleted);
+
+        // Map to DTO using AutoMapper
+        var memberDto = _mapper.Map<ProjectMemberDto>(projectMember);
+        
+        // Set additional properties that aren't mapped automatically
+        memberDto.AssignedTasksCount = assignedTasksCount;
+        memberDto.CompletedTasksCount = completedTasksCount;
+        memberDto.IsActive = !projectMember.IsDeleted;
+        
+        // Note: Activity logging would be implemented here when LogProjectActivityAsync is available
+        // Example: await LogProjectActivityAsync(
+        //     projectMember.ProjectId, 
+        //     "MemberRoleUpdated",
+        //     $"User {projectMember.User?.Username ?? "Unknown"} role changed to {updateDto.NewRole}",
+        //     projectMember.UserId);
+
+        return memberDto;
+    }
+
+    //============================not implemented=========================================================
+
     Task<bool> IProjectService.AssignTaskAsync(Guid taskId, Guid userId)
     {
         throw new NotImplementedException();
@@ -448,10 +517,7 @@ public class ProjectService : IProjectService
         throw new NotImplementedException();
     }
 
-    Task<ProjectMemberDto> IProjectService.UpdateMemberRoleAsync(UpdateProjectMemberRoleDto updateDto)
-    {
-        throw new NotImplementedException();
-    }
+    
 
     Task<bool> IProjectService.UpdateProjectStatusAsync(Guid projectId, string newStatus)
     {

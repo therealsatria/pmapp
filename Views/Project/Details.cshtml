@@ -171,7 +171,42 @@
                                                 </div>
                                                 <div class="flex-grow-1 ms-3">
                                                     <h6 class="fw-bold mb-0">@(string.IsNullOrEmpty(member.Username) ? $"User {member.UserId}" : (string.IsNullOrEmpty(member.FullName) ? member.Username : $"{member.FullName} ({member.Username})"))</h6>
-                                                    <p class="text-muted mb-0">@member.Role</p>
+                                                    <div class="d-flex align-items-center">
+                                                        <form asp-action="UpdateMemberRole" method="post" class="d-flex align-items-center">
+                                                            <input type="hidden" name="id" value="@Model.Id" />
+                                                            <input type="hidden" name="memberId" value="@member.Id" />
+                                                            <select name="newRole" class="form-select form-select-sm me-2" style="width: 140px;">
+                                                                <option value="@member.Role" selected>@member.Role</option>
+                                                                @if (member.Role != "Project Manager")
+                                                                {
+                                                                    <option value="Project Manager">Project Manager</option>
+                                                                }
+                                                                @if (member.Role != "Developer")
+                                                                {
+                                                                    <option value="Developer">Developer</option>
+                                                                }
+                                                                @if (member.Role != "Designer")
+                                                                {
+                                                                    <option value="Designer">Designer</option>
+                                                                }
+                                                                @if (member.Role != "QA Tester")
+                                                                {
+                                                                    <option value="QA Tester">QA Tester</option>
+                                                                }
+                                                                @if (member.Role != "Business Analyst")
+                                                                {
+                                                                    <option value="Business Analyst">Business Analyst</option>
+                                                                }
+                                                                @if (member.Role != "Stakeholder")
+                                                                {
+                                                                    <option value="Stakeholder">Stakeholder</option>
+                                                                }
+                                                            </select>
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                                <i class="bi bi-check"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                     <small class="text-muted">Joined: @member.JoinedAt.ToShortDateString()</small>
                                                 </div>
                                                 <div class="ms-auto">

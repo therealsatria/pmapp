@@ -282,5 +282,32 @@ namespace pmapp.Infrastructures.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
         }
+
+        [HttpPost]
+        [Authorize(Roles = "user")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateMemberRole(Guid id, Guid memberId, string newRole)
+        {
+            try
+            {
+                var updateDto = new UpdateProjectMemberRoleDto
+                {
+                    MemberId = memberId,
+                    NewRole = newRole
+                };
+                
+                await _projectService.UpdateMemberRoleAsync(updateDto);
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error updating member role: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
     }
 }
