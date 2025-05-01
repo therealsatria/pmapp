@@ -167,6 +167,7 @@ public class ProjectTaskService : IProjectTaskService
         task.Description = request.Description ?? task.Description;
         task.Status = request.Status ?? task.Status;
         task.Priority = request.Priority ?? task.Priority;
+        task.Progress = request.Progress ?? task.Progress;
         task.DueDate = request.DueDate?.ToUniversalTime() ?? task.DueDate;
         task.AssignedToId = request.AssignedToId ?? task.AssignedToId;
         task.EstimatedHours = request.EstimatedHours ?? task.EstimatedHours;

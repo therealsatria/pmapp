@@ -29,6 +29,8 @@ namespace Infrastructures.Models
         [Required]
         public string Priority { get; set; }
 
+        public int Progress { get; set; }
+
         public DateTime? DueDate { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]

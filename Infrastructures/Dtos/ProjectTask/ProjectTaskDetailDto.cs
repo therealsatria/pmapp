@@ -11,6 +11,7 @@ public class ProjectTaskDetailDto : ProjectTaskDto
     public IEnumerable<ProjectTaskHistoryDto> History { get; set; }
     public IEnumerable<ProjectTaskAttachmentDto> Attachments { get; set; }
     public List<string> Tags { get; set; }
+    public int Progress { get; set; }
     public DateTime? CompletedAt { get; set; }
     public int EstimatedHours { get; set; }
     public int? ActualHours { get; set; }
