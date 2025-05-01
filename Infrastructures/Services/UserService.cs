@@ -80,7 +80,20 @@ public class UserService : IUserService
             LastLogin = user.LastLogin ?? now,
             LastLoginFormatted = GetRelativeTimeString(user.LastLogin ?? now, now)
         });
-    }    
+    }
+
+    public async Task<IEnumerable<UserShortDto>> GetUserShorts()
+    {
+        var users = await _userRepository.GetAllUsersAsync();
+        return users.Select(user => new UserShortDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Role = user.Role,
+            FullName = user.FullName,
+            Email = user.Email
+        });
+    }
     
     private string GetRelativeTimeString(DateTime pastTime, DateTime currentTime)
     {

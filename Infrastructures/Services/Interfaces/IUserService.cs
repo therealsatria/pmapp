@@ -8,4 +8,5 @@ public interface IUserService
     Task<UserDto> GetUserByIdAsync(Guid id);
     Task<IEnumerable<UserDto>> GetAllUsersAsync();
     Task<bool> UpdateLastLoginAsync(Guid userId);
+    Task<IEnumerable<UserShortDto>> GetUserShorts();
 }

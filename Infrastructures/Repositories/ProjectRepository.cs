@@ -27,7 +27,12 @@ public class ProjectRepository : IProjectRepository
             throw new ArgumentException("Project ID cannot be empty.", nameof(projectId));
         }
 
-        var project = await _context.Projects.AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId);
+        var project = await _context.Projects
+            .AsNoTracking()
+            .Include(p => p.CreatedBy)
+            .Include(p => p.ProjectMembers)
+            .FirstOrDefaultAsync(p => p.Id == projectId);
+
         if (project == null)
         {
             throw new KeyNotFoundException($"Project with ID {projectId} not found.");

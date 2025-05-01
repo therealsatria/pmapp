@@ -7,10 +7,12 @@ namespace Infrastructures.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly IUserRepository _userRepository;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository)
     {
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
 
     public async Task<IEnumerable<ProjectListDto>> GetAllProjectsAsync()
@@ -32,6 +34,68 @@ public class ProjectService : IProjectService
                 ProjectId = m.ProjectId
             })
         });
+    }
+
+    public async Task<ProjectDetailDto> GetProjectByIdAsync(Guid projectId)
+    {
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new KeyNotFoundException($"Project with ID {projectId} not found.");
+        }
+
+        // Get project progress
+        int progress = 0;
+        try 
+        {
+            progress = await _projectRepository.GetProjectProgressAsync(projectId);
+        }
+        catch { /* Ignore errors and default to 0 */ }
+
+        // Create user info for CreatedBy - using the loaded navigation property
+        var createdBy = project.CreatedBy != null
+            ? new UserShortDto
+            {
+                Id = project.CreatedBy.Id,
+                Username = project.CreatedBy.Username,
+                FullName = project.CreatedBy.FullName,
+                Email = project.CreatedBy.Email,
+                ProfilePictureUrl = project.CreatedBy.ProfilePictureUrl,
+                Role = project.CreatedBy.Role
+            }
+            : new UserShortDto(); // Empty if no created by user
+
+        // Create new ProjectDetailDto
+        return new ProjectDetailDto
+        {
+            Id = project.Id,
+            ProjectName = project.ProjectName,
+            Description = project.Description,
+            Status = project.Status,
+            StartDate = project.StartDate ?? DateTime.MinValue,
+            EndDate = project.EndDate,
+            Progress = progress,
+            DaysRemaining = project.EndDate.HasValue 
+                ? (int)(project.EndDate.Value - DateTime.UtcNow).TotalDays 
+                : 0,
+            IsOverdue = project.EndDate.HasValue && project.EndDate.Value < DateTime.UtcNow,
+            CreatedAt = project.CreatedAt,
+            UpdatedAt = project.UpdatedAt,
+            CreatedBy = createdBy,
+            TeamMembers = project.ProjectMembers.Select(m => new ProjectMemberShortDto
+            {
+                UserId = m.UserId,
+                Role = m.Role,
+                JoinedAt = m.JoinedAt,
+                ProjectId = m.ProjectId
+            }),
+            // Tambahkan property lain sesuai kebutuhan
+            TasksByStatus = new Dictionary<string, int>(), // Perlu implementasi lebih lanjut
+            TasksByPriority = new Dictionary<string, int>(), // Perlu implementasi lebih lanjut
+            RecentTasks = new List<ProjectTaskDto>(), // Perlu implementasi lebih lanjut
+            Members = new List<ProjectMemberDto>(), // Perlu implementasi lebih lanjut
+            RecentActivities = new List<ProjectActivityDto>() // Perlu implementasi lebih lanjut
+        };
     }
 
     public async Task<ProjectListDto> CreateProjectAsync(CreateProjectDto request)
@@ -67,6 +131,8 @@ public class ProjectService : IProjectService
             Status = createdProject.Status,
             StartDate = createdProject.StartDate ?? DateTime.MinValue,
             EndDate = createdProject.EndDate,
+            CreatedAt = createdProject.CreatedAt,
+            UpdatedAt = createdProject.UpdatedAt,
             TeamMembers = createdProject.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
                 UserId = m.UserId,
@@ -109,6 +175,7 @@ public class ProjectService : IProjectService
             Status = updatedProject.Status,
             StartDate = (DateTime)updatedProject.StartDate,
             EndDate = updatedProject.EndDate,
+            CreatedAt = updatedProject.CreatedAt,
             UpdatedAt = updatedProject.UpdatedAt,
             TeamMembers = updatedProject.ProjectMembers.Select(m => new ProjectMemberShortDto
             {
@@ -158,57 +225,6 @@ public class ProjectService : IProjectService
     Task<IEnumerable<ProjectActivityDto>> IProjectService.GetProjectActivitiesAsync(Guid projectId, int count)
     {
         throw new NotImplementedException();
-    }
-
-    public async Task<ProjectDetailDto> GetProjectByIdAsync(Guid projectId)
-    {
-        var project = await _projectRepository.GetByIdAsync(projectId);
-        if (project == null)
-        {
-            throw new KeyNotFoundException($"Project with ID {projectId} not found.");
-        }
-
-        // Get project progress
-        int progress = 0;
-        try 
-        {
-            progress = await _projectRepository.GetProjectProgressAsync(projectId);
-        }
-        catch { /* Ignore errors and default to 0 */ }
-
-        // Get team members
-        var members = await _projectRepository.GetMembersByProjectAsync(projectId);
-
-        // Create new ProjectDetailDto
-        return new ProjectDetailDto
-        {
-            Id = project.Id,
-            ProjectName = project.ProjectName,
-            Description = project.Description,
-            Status = project.Status,
-            StartDate = project.StartDate ?? DateTime.MinValue,
-            EndDate = project.EndDate,
-            Progress = progress,
-            DaysRemaining = project.EndDate.HasValue 
-                ? (int)(project.EndDate.Value - DateTime.UtcNow).TotalDays 
-                : 0,
-            IsOverdue = project.EndDate.HasValue && project.EndDate.Value < DateTime.UtcNow,
-            CreatedAt = project.CreatedAt,
-            UpdatedAt = project.UpdatedAt,
-            TeamMembers = members.Select(m => new ProjectMemberShortDto
-            {
-                UserId = m.UserId,
-                Role = m.Role,
-                JoinedAt = m.JoinedAt,
-                ProjectId = m.ProjectId
-            }),
-            // Tambahkan property lain sesuai kebutuhan
-            TasksByStatus = new Dictionary<string, int>(), // Perlu implementasi lebih lanjut
-            TasksByPriority = new Dictionary<string, int>(), // Perlu implementasi lebih lanjut
-            RecentTasks = new List<ProjectTaskDto>(), // Perlu implementasi lebih lanjut
-            Members = new List<ProjectMemberDto>(), // Perlu implementasi lebih lanjut
-            RecentActivities = new List<ProjectActivityDto>() // Perlu implementasi lebih lanjut
-        };
     }
 
     Task<ProjectMemberDto> IProjectService.GetProjectMemberAsync(Guid projectId, Guid userId)

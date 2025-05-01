@@ -17,9 +17,6 @@ public class CreateProjectDto
     public DateTime StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
-
-    [Required]
-    public string Priority { get; set; } // "Low", "Medium", "High"
     
     public List<Guid> InitialMemberIds { get; set; } = new List<Guid>();
     

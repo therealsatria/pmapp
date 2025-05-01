@@ -86,7 +86,7 @@ namespace pmapp.Infrastructures.Controllers
             }
             
             // Jika validation error, kita perlu mengambil ulang daftar user
-            var userList = await _userService.GetAllUsersAsync();
+            var userList = await _userService.GetUserShorts();
             ViewBag.Users = userList;
             return View(projectDto);
         }
