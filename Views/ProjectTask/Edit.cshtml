@@ -1,0 +1,160 @@
+@model Infrastructures.Dtos.UpdateProjectTaskDto
+
+@{
+    ViewData["Title"] = "Edit Task";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Edit Task</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId">@ViewBag.ProjectName</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId">Tasks</a></li>
+                    <li class="breadcrumb-item active">Edit Task</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Edit Task</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="Title" class="form-label">Task Title</label>
+                                <input asp-for="Title" class="form-control" required />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label">Status</label>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="Todo">To Do</option>
+                                    <option value="InProgress">In Progress</option>
+                                    <option value="Blocked">Blocked</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Priority" class="form-label">Priority</label>
+                                <select asp-for="Priority" class="form-select" required>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                                <span asp-validation-for="Priority" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DueDate" class="form-label">Due Date</label>
+                                <input asp-for="DueDate" type="date" class="form-control" />
+                                <span asp-validation-for="DueDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Progress" class="form-label">Progress (%)</label>
+                                <input asp-for="Progress" type="number" min="0" max="100" class="form-control" />
+                                <span asp-validation-for="Progress" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="AssignedToId" class="form-label">Assign To</label>
+                                <select asp-for="AssignedToId" class="form-select">
+                                    <option value="">-- Unassigned --</option>
+                                    @foreach (var user in ViewBag.Users)
+                                    {
+                                        <option value="@user.Id">@user.FullName (@user.Username)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="AssignedToId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EstimatedHours" class="form-label">Estimated Hours</label>
+                                <input asp-for="EstimatedHours" type="number" min="0" class="form-control" />
+                                <span asp-validation-for="EstimatedHours" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="Tags" class="form-label">Tags</label>
+                                <input id="tagInput" type="text" class="form-control" 
+                                    placeholder="Enter tags separated by commas" 
+                                    value="@(Model.Tags != null ? string.Join(",", Model.Tags) : "")" />
+                                <small class="text-muted">Separate tags with commas (e.g. bug,frontend,urgent)</small>
+                                <span asp-validation-for="Tags" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Tasks
+                            </a>
+                            <div>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info me-2">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Convert comma-separated tags from input to array for form submission
+            $('form').on('submit', function() {
+                const tagInput = $('#tagInput').val();
+                
+                // Clear existing hidden inputs for Tags
+                $('input[name^="Tags"]').remove();
+                
+                if (tagInput) {
+                    const tags = tagInput.split(',').map(tag => tag.trim());
+                    
+                    // Add a hidden input for each tag
+                    tags.forEach(function(tag, index) {
+                        if (tag) {
+                            $('form').append(`<input type="hidden" name="Tags[${index}]" value="${tag}" />`);
+                        }
+                    });
+                }
+                return true;
+            });
+        });
+    </script>
+} 

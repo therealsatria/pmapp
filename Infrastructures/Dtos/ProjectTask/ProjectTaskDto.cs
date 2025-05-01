@@ -18,6 +18,7 @@ public class ProjectTaskDto
     public UserShortDto AssignedTo { get; set; }
     public UserShortDto CreatedBy { get; set; }
     public Guid ProjectId { get; set; }
+    public List<string> Tags { get; set; } = new List<string>();
     public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status != "Completed";
 }
 

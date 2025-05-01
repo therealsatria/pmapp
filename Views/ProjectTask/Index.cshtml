@@ -1,0 +1,163 @@
+@model IEnumerable<Infrastructures.Dtos.ProjectTaskDto>
+
+@{
+    ViewData["Title"] = "Project Tasks";
+}
+
+<div class="container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h1>Tasks - @ViewBag.ProjectName</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId">@ViewBag.ProjectName</a></li>
+                    <li class="breadcrumb-item active">Tasks</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a asp-action="Create" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New Task
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <h5>No tasks found</h5>
+                            <p>Get started by creating your first task for this project!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Due Date</th>
+                                        <th>Assigned To</th>
+                                        <th>Tags</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var task in Model)
+                                    {
+                                        <tr>
+                                            <td class="fw-medium">@task.Title</td>
+                                            <td>
+                                                @switch (task.Status)
+                                                {
+                                                    case "Todo":
+                                                        <span class="badge bg-secondary">To Do</span>
+                                                        break;
+                                                    case "InProgress":
+                                                        <span class="badge bg-primary">In Progress</span>
+                                                        break;
+                                                    case "Blocked":
+                                                        <span class="badge bg-warning">Blocked</span>
+                                                        break;
+                                                    case "Completed":
+                                                        <span class="badge bg-success">Completed</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@task.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (task.Priority)
+                                                {
+                                                    case "High":
+                                                        <span class="badge bg-danger">High</span>
+                                                        break;
+                                                    case "Medium":
+                                                        <span class="badge bg-warning">Medium</span>
+                                                        break;
+                                                    case "Low":
+                                                        <span class="badge bg-success">Low</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@task.Priority</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (task.DueDate.HasValue)
+                                                {
+                                                    <span class="@(task.IsOverdue ? "text-danger fw-bold" : "")">
+                                                        @task.DueDate.Value.ToShortDateString()
+                                                        @if (task.IsOverdue)
+                                                        {
+                                                            <i class="bi bi-exclamation-circle-fill ms-1"></i>
+                                                        }
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                            <td>@(task.AssignedTo?.Username ?? "Unassigned")</td>
+                                            <td>
+                                                @{
+                                                    /* Note: We need to get this data from the ProjectTaskDto 
+                                                    but it's not available currently. We need to extend the 
+                                                    mapping in ProjectTaskService and update the DTO */
+
+                                                    /* For now just a placeholder */
+                                                }
+                                                <div class="tags">
+                                                    @if (task.Tags != null && task.Tags.Any())
+                                                    {
+                                                        @foreach (var tag in task.Tags)
+                                                        {
+                                                            <span class="badge bg-info">@tag</span>
+                                                        }
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>@task.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-outline-info">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

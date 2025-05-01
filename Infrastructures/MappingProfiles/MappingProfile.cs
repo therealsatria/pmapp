@@ -35,12 +35,26 @@ public class MappingProfile : Profile
         // Task entity mappings
         CreateMap<ProjectTask, ProjectTaskDto>()
             .ForMember(dest => dest.AssignedTo, opt => opt.MapFrom(src => src.AssignedTo))
-            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy));
+            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => 
+                string.IsNullOrEmpty(src.Tags) ? new List<string>() : src.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()));
         
         CreateMap<ProjectTask, ProjectTaskDetailDto>()
             .ForMember(dest => dest.AssignedTo, opt => opt.MapFrom(src => src.AssignedTo))
             .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
             .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.TaskComments))
-            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.TaskAttachments));
+            .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.TaskAttachments))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => 
+                string.IsNullOrEmpty(src.Tags) ? new List<string>() : src.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()));
+            
+        // TaskComment entity mappings
+        CreateMap<TaskComment, ProjectTaskCommentDto>()
+            .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.CommentText))
+            .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));
+            
+        // TaskAttachment entity mappings
+        CreateMap<TaskAttachment, ProjectTaskAttachmentDto>()
+            .ForMember(dest => dest.FileUrl, opt => opt.MapFrom(src => src.FilePath))
+            .ForMember(dest => dest.UploadedBy, opt => opt.MapFrom(src => src.UploadedBy));
     }
 } 

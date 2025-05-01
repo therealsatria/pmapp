@@ -243,12 +243,12 @@
                         <a asp-action="AddMember" asp-route-id="@Model.Id" class="btn btn-outline-primary">
                             <i class="bi bi-people"></i> Add Team Member
                         </a>
-                        <button class="btn btn-outline-primary">
+                        <a asp-controller="ProjectTask" asp-action="Index" asp-route-projectId="@Model.Id" class="btn btn-outline-primary">
                             <i class="bi bi-list-check"></i> View All Tasks
-                        </button>
-                        <button class="btn btn-outline-primary">
+                        </a>
+                        <a asp-controller="ProjectTask" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-outline-primary">
                             <i class="bi bi-plus-circle"></i> Add New Task
-                        </button>
+                        </a>
                         <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger mt-3">
                             <i class="bi bi-trash"></i> Delete Project
                         </a>

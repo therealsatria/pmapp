@@ -1,0 +1,280 @@
+@model Infrastructures.Dtos.ProjectTaskDetailDto
+
+@{
+    ViewData["Title"] = "Task Details";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Task Details</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId">@ViewBag.ProjectName</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId">Tasks</a></li>
+                    <li class="breadcrumb-item active">@Model.Title</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@Model.Title</h5>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Description</h6>
+                                <p>@(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)</p>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Status</h6>
+                                        @switch (Model.Status)
+                                        {
+                                            case "Todo":
+                                                <span class="badge bg-secondary">To Do</span>
+                                                break;
+                                            case "InProgress":
+                                                <span class="badge bg-primary">In Progress</span>
+                                                break;
+                                            case "Blocked":
+                                                <span class="badge bg-warning">Blocked</span>
+                                                break;
+                                            case "Completed":
+                                                <span class="badge bg-success">Completed</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@Model.Status</span>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Priority</h6>
+                                        @switch (Model.Priority)
+                                        {
+                                            case "High":
+                                                <span class="badge bg-danger">High</span>
+                                                break;
+                                            case "Medium":
+                                                <span class="badge bg-warning">Medium</span>
+                                                break;
+                                            case "Low":
+                                                <span class="badge bg-success">Low</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@Model.Priority</span>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Due Date</h6>
+                                        <p>
+                                            @if (Model.DueDate.HasValue)
+                                            {
+                                                <span class="@(Model.IsOverdue ? "text-danger fw-bold" : "")">
+                                                    @Model.DueDate.Value.ToString("yyyy-MM-dd")
+                                                    @if (Model.IsOverdue)
+                                                    {
+                                                        <i class="bi bi-exclamation-circle-fill ms-1"></i>
+                                                    }
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span>Not set</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Assigned To</h6>
+                                        <p>@(Model.AssignedTo?.FullName ?? "Unassigned")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Created By</h6>
+                                        <p>
+                                            @(Model.CreatedBy?.FullName ?? "Unknown") 
+                                            on @Model.CreatedAt.ToString("yyyy-MM-dd")
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Estimated Hours</h6>
+                                        <p>@Model.EstimatedHours</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Tags</h6>
+                                <div>
+                                    @if (Model.Tags != null && Model.Tags.Any())
+                                    {
+                                        foreach (var tag in Model.Tags)
+                                        {
+                                            <span class="badge bg-info me-1">@tag</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>No tags</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Progress</h6>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: @(Model.Progress)%;" 
+                                        aria-valuenow="@Model.Progress" aria-valuemin="0" aria-valuemax="100">
+                                        @Model.Progress%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5 class="mb-3">Task Actions</h5>
+                        <div class="d-flex gap-2">
+                            @if (Model.Status != "Completed")
+                            {
+                                <form asp-action="CompleteTask" asp-route-id="@Model.Id" method="post">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Complete Task
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="ReopenTask" asp-route-id="@Model.Id" method="post">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reopen Task
+                                    </button>
+                                </form>
+                            }
+                            <a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Comments != null && Model.Comments.Any())
+                    {
+                        <div class="comment-list">
+                            @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                            {
+                                <div class="comment mb-3 border-bottom pb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold">@comment.User.Username</div>
+                                        <small class="text-muted">@comment.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                                    </div>
+                                    <p class="mb-1">@comment.Content</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No comments yet.</p>
+                    }
+
+                    <div class="mt-3">
+                        <form asp-action="AddComment" asp-route-taskId="@Model.Id" method="post">
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label">Add Comment</label>
+                                <textarea id="commentContent" name="content" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Comment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Attachments != null && Model.Attachments.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0">Attachments</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var attachment in Model.Attachments)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-paperclip me-2"></i>
+                                        <a href="@attachment.FileUrl" target="_blank">@attachment.FileName</a>
+                                        <small class="d-block text-muted">
+                                            Uploaded by @attachment.UploadedBy.Username
+                                            on @attachment.UploadedAt.ToString("yyyy-MM-dd")
+                                        </small>
+                                    </div>
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div> 

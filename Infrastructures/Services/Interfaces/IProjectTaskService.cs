@@ -4,7 +4,6 @@ namespace Infrastructures.Services;
 
 public interface IProjectTaskService
 {
-    // Task management within projects
     Task<IEnumerable<ProjectTaskDto>> GetProjectTasksAsync(Guid projectId);
     Task<ProjectTaskDetailDto> GetTaskByIdAsync(Guid taskId);
     Task<ProjectTaskDto> CreateTaskAsync(CreateProjectTaskDto request);

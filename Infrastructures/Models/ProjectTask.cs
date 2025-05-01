@@ -44,6 +44,9 @@ namespace Infrastructures.Models
 
         public Guid? ParentTaskId { get; set; }
 
+        // Tambahkan properti Tags
+        public string Tags { get; set; }
+
         // Navigation properties
         [ForeignKey("ProjectId")]
         public virtual Project Project { get; set; }

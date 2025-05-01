@@ -28,6 +28,10 @@ builder.Services.AddScoped<Infrastructures.Repositories.IProjectRepository, Infr
 builder.Services.AddScoped<Infrastructures.Services.IUserService, Infrastructures.Services.UserService>();
 builder.Services.AddScoped<Infrastructures.Repositories.IUserRepository, Infrastructures.Repositories.UserRepository>();
 builder.Services.AddScoped<Infrastructures.Services.ITokenService, Infrastructures.Services.TokenService>();
+
+// Tambahkan pendaftaran untuk ProjectTaskService
+builder.Services.AddScoped<Infrastructures.Services.IProjectTaskService, Infrastructures.Services.ProjectTaskService>();
+
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<Infrastructures.Data.AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
