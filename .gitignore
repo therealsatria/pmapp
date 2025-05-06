@@ -65,7 +65,7 @@ yarn-error.log*
 ## NuGet Packages
 *.nupkg
 packages/
-**/wwwroot/lib/
+#**/wwwroot/lib/
 
 ## Publish output
 publish/
@@ -81,7 +81,6 @@ web.config
 ## Logs
 logs/
 *.log
-*.txt
 
 ## Other
 *.bak
@@ -103,7 +102,7 @@ coverage/
 
 ## production
 build/
-dist/
+#dist/
 
 ## IDEs and editors
 .idea/
