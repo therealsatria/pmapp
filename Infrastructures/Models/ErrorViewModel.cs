@@ -1,4 +1,4 @@
-namespace pmapp.Infrastrctures.Models;
+namespace Infrastrctures.Models;
 
 public class ErrorViewModel
 {
