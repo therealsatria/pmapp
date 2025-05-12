@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Infrastructures.MappingProfiles;
+using Infrastructures.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +20,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
     });
 
-builder.Services.AddScoped<Infrastructures.Services.IProjectService, Infrastructures.Services.ProjectService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<Infrastructures.Repositories.IProjectRepository, Infrastructures.Repositories.ProjectRepository>();
-builder.Services.AddScoped<Infrastructures.Services.IUserService, Infrastructures.Services.UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<Infrastructures.Repositories.IUserRepository, Infrastructures.Repositories.UserRepository>();
-builder.Services.AddScoped<Infrastructures.Services.ITokenService, Infrastructures.Services.TokenService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 
 // Tambahkan pendaftaran untuk ProjectTaskService
-builder.Services.AddScoped<Infrastructures.Services.IProjectTaskService, Infrastructures.Services.ProjectTaskService>();
+builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
 
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<Infrastructures.Data.AppDbContext>(options =>

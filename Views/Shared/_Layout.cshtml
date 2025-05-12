@@ -27,6 +27,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item"></li>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="" asp-action="Index">
+                                    [ DB Status&nbsp;
+                                    <span id="dbStatusIndicator" class="position-relative">
+                                        <i class="bi bi-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
+                                    </span>]
+                                </a>
+                            </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -94,5 +102,34 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        function checkDatabaseConnection() {
+            fetch('/api/system/dbstatus')
+                .then(response => response.json())
+                .then(data => {
+                    const indicator = document.getElementById('dbStatusIndicator').querySelector('i');
+                    if (data.isConnected) {
+                        indicator.classList.remove('text-secondary', 'text-danger');
+                        indicator.classList.add('text-success');
+                        console.log('DB is connected'); // Add this line for debugging reasons
+                    } else {
+                        indicator.classList.remove('text-secondary', 'text-success');
+                        indicator.classList.add('text-danger');
+                        console.log('DB is not connected'); // Add this line for debugging reasons
+                    }
+                })
+                .catch(() => {
+                    const indicator = document.getElementById('dbStatusIndicator').querySelector('i');
+                    indicator.classList.remove('text-secondary', 'text-success');
+                    indicator.classList.add('text-danger');
+                });
+        }
+
+        // Check connection every 30 seconds
+        setInterval(checkDatabaseConnection, 30000);
+        // Initial check
+        checkDatabaseConnection();
+    </script>
 </body>
 </html>
